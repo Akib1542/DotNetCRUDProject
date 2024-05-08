@@ -14,10 +14,16 @@ namespace BulkyBookWeb.Controllers;
             _db = db;
 
         }
-        public IActionResult Index()
+        public IActionResult Index(string search)
         {
             IEnumerable<Catagory> objCatagoryList = _db.Catagories; //easy peasy
-            //var objCatagoryList = _db.Catagories.ToList();
+                                                                    //var objCatagoryList = _db.Catagories.ToList();
+            if (!string.IsNullOrEmpty(search))
+            {
+                // Filter the categories based on the search string
+                objCatagoryList = objCatagoryList.Where(c => c.Name.Contains(search));
+            }
+
             return View(objCatagoryList);
         }
 
