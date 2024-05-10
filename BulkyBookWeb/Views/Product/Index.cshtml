@@ -1,7 +1,10 @@
-﻿@model IEnumerable<Products>
+﻿@using Microsoft.AspNetCore.Http
+
+@model IEnumerable<Products>
 @{
     ViewData["Title"] = "Index";
 }
+
 
 <div class accesskey="container p-3">
     <div class="row pt-4">
@@ -10,6 +13,10 @@
                 Product List
             </h2>
         </div>
+
+
+
+
 
         <div class="col 6 text-end">
             <a asp-controller="Product" asp-action="Create" class="btn btn-primary">
@@ -82,6 +89,10 @@
 
 
 
+
+
         </tbody>
+
+
     </table>
 </div>

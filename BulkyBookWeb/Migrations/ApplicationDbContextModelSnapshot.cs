@@ -61,9 +61,25 @@ namespace BulkyBookWeb.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("catId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("catId");
+
                     b.ToTable("Product");
+                });
+
+            modelBuilder.Entity("BulkyBookWeb.Models.Products", b =>
+                {
+                    b.HasOne("BulkyBookWeb.Models.Catagory", "catagory")
+                        .WithMany()
+                        .HasForeignKey("catId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("catagory");
                 });
 #pragma warning restore 612, 618
         }

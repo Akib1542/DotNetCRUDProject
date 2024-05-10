@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using BulkyBookWeb.Models;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace BulkyBookWeb.Controllers
 {
@@ -22,6 +23,7 @@ namespace BulkyBookWeb.Controllers
 
         public IActionResult Create()
         {
+            ViewBag.Cats = new SelectList(_db.Catagories, "Id", "Name");
 
             return View();
         }
@@ -46,6 +48,7 @@ namespace BulkyBookWeb.Controllers
                 TempData["success"] = "Catagory Created Successfully!";
                 return RedirectToAction("Index");
             }
+            ViewBag.Cats = new SelectList(_db.Catagories, "Id", "Name");
             return View(obj);
 
         }

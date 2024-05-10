@@ -1,4 +1,8 @@
 using BulkyBookWeb.Data;
+using BulkyBookWeb.Interfaces;
+using BulkyBookWeb.Models;
+using BulkyBookWeb.Repo;
+using BulkyBookWeb.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +21,9 @@ namespace BulkyBookWeb
                 builder.Configuration.GetConnectionString("DefaultConnection")
                 ));
 
-            builder.Services.AddRazorPages().AddRazorRuntimeCompilation();   
+            builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+            builder.Services.AddScoped<ICatagory,CatagoryService>();
+            builder.Services.AddScoped<IBulky<Catagory,int,Catagory>,CatagoryRepo>();
 
 
 

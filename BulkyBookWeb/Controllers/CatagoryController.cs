@@ -1,5 +1,7 @@
 ﻿using BulkyBookWeb.Data;
+using BulkyBookWeb.Interfaces;
 using BulkyBookWeb.Models;
+using BulkyBookWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,38 +9,42 @@ namespace BulkyBookWeb.Controllers;
 
     public class CatagoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
+       
+        private readonly ICatagory catService;
 
-        public CatagoryController(ApplicationDbContext db)
+        #region ctor
+
+        public CatagoryController(ICatagory catService)
         {
-            _db = db;
+            this.catService = catService;
 
         }
-        public IActionResult Index(string search)
-        {
-            IEnumerable<Catagory> objCatagoryList = _db.Catagories; //easy peasy
-                                                                    //var objCatagoryList = _db.Catagories.ToList();
-            if (!string.IsNullOrEmpty(search))
-            {
-                // Filter the categories based on the search string
-                objCatagoryList = objCatagoryList.Where(c => c.Name.Contains(search));
-            }
+    #endregion
 
-            return View(objCatagoryList);
+        #region Search
+
+    public async Task<IActionResult> Index(string? search)
+        {
+       
+            var data = await catService.GetCatBySearch(search);
+            return View(data);
+       
         }
+    #endregion
 
-        //Get Action Method
 
-        public IActionResult Create()
-        {
-                                                                   
+        #region Create Get
+
+    public IActionResult Create()
+        {                                              
             return View();
         }
+    #endregion
 
-         //Post Action Method
+        #region Create Post
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Catagory obj)
+        public async Task<IActionResult> Create(Catagory obj)
         {
             if(obj.Name==obj.DisplayOrder.ToString())
             {
@@ -48,46 +54,43 @@ namespace BulkyBookWeb.Controllers;
             if (ModelState.IsValid)
             {
 
+                var data =  await catService.CreateCatagoryAsync(obj);
+                
+                if(data!=null)
+                {
+                    TempData["success"] = "Catagory Created Successfully!";
+                    return RedirectToAction("Index");
+                }
 
-                _db.Catagories.Add(obj);
-                _db.SaveChanges();
-            // since we are in the same controller
-            // if we needed to redirect to another controller then we should do this "RedirectToAction("Index","ControllerName");"
-            // but we need to validate some actions as we know this is a NOTNULL portion so if we put any NULL values then it won't work and send us and exception
-            TempData["success"] = "Catagory Created Successfully!";
-                return RedirectToAction("Index");
             }
             return View(obj);  
 
         }
+    #endregion
 
-        //GET
 
-        public IActionResult Edit(int? id) { 
-        
-            if(id==null || id==0)
+        #region Edit GET
+        public async Task<IActionResult> Edit(int id = 0) {
+
+            try
             {
-                return NotFound();
+                var data = await catService.GetCatagoryAsync(id);
+                return View(data);
             }
-
-            var catagoryFromDb = _db.Catagories.Find(id);
-            //var catagoryFromDbFirst = _db.Catagories.FirstOrDefault(c => c.Id == id);
-            //var catagoryFromDbSingle = _db.Catagories.SingleOrDefault(c => c.Id == id);
-
-            if(catagoryFromDb==null)
+            catch
             {
-                return NotFound();
+                 return NotFound();
             }
-            return View(catagoryFromDb);
 
         }
+    #endregion
 
 
-
+        #region Edit POST
     //Post Action Method
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Edit(Catagory obj)
+    public async Task<IActionResult> Edit(Catagory obj)
     {
         if (obj.Name == obj.DisplayOrder.ToString())
         {
@@ -97,20 +100,28 @@ namespace BulkyBookWeb.Controllers;
         if (ModelState.IsValid)
         {
 
-
-            _db.Catagories.Update(obj);
-            _db.SaveChanges();
-            TempData["success"] = "Catagory Edited Successfully!";
+            try
+            {
+                await catService.UpdateCatagoryAsync(obj);
+                TempData["success"] = "Catagory Edited Successfully!";
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                return View(obj);
+            }
+           
 
             return RedirectToAction("Index");
         }
         return View(obj);
 
     }
+    #endregion
 
-    //GET
 
-    public IActionResult Delete(int? id)
+        #region Delete GET
+    public async Task<IActionResult> Delete(int id=0)
     {
 
         if (id == null || id == 0)
@@ -118,37 +129,45 @@ namespace BulkyBookWeb.Controllers;
             return NotFound();
         }
 
-        var catagoryFromDb = _db.Catagories.Find(id);
-        //var catagoryFromDbFirst = _db.Catagories.FirstOrDefault(c => c.Id == id);
-        //var catagoryFromDbSingle = _db.Catagories.SingleOrDefault(c => c.Id == id);
-
-        if (catagoryFromDb == null)
+        try
+        {
+            var data = await catService.GetCatagoryAsync(id);
+            return View(data);
+        }
+        catch(Exception ex)
         {
             return NotFound();
         }
-        return View(catagoryFromDb);
 
     }
+    #endregion
 
-
+        #region Delete POST
 
     //Post Action Method
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public IActionResult DeletePOST (int? id)
+    public async Task<IActionResult> DeletePOST (int id=0)
     {
-            var obj = _db.Catagories.Find(id);
-            if(obj == null)
+            if(id == 0)
             {
                return NotFound();
             }
-
-            _db.Catagories.Remove(obj);
-            _db.SaveChanges();
-            TempData["success"] = "Catagory Deleted Successfully!";
-
-            return RedirectToAction("Index");
+            try
+            {
+             
+                var data = await catService.DeleteCatagoryAsync(id);
+                TempData["success"] = "Catagory Deleted Successfully!";
+                return RedirectToAction("Index");
+       
+            }
+            catch(Exception ex)
+            {
+               return NotFound();
+            }
+            
     }
+    #endregion
 
 }
 
